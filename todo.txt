@@ -1,0 +1,1 @@
+Make sure to only shuffle people to outside their groups; (shuffling inside the range of the same group is irrelevant)
