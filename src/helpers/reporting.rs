@@ -3,6 +3,7 @@ use std::{
     io::Write,
 };
 
+use axum::Json;
 use chrono::Utc;
 
 use crate::{
@@ -82,7 +83,11 @@ pub fn extract_metrics(persons: &Vec<Person>, number_of_groups: u8) {
     println!("Worst deviation: {}", worst_deviation);
 }
 
-pub fn write_results_to_file(persons: &Vec<Person>, number_of_groups: u8, iteration: u64) {
+pub async fn write_results_to_file(
+    persons: &Vec<Person>,
+    number_of_groups: u8,
+    iteration: u64,
+) -> Json<Report> {
     let groups: Vec<Group> = split_into_groups(&persons, number_of_groups);
 
     let report = Report {
@@ -128,4 +133,6 @@ pub fn write_results_to_file(persons: &Vec<Person>, number_of_groups: u8, iterat
 
     // Finish writing and close the file
     file.flush().unwrap();
+
+    Json(report)
 }

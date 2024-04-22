@@ -12,10 +12,12 @@ use helpers::{
 
 use std::fs::File;
 
-use structs::Person;
+use structs::{Person, Report};
 
 // Number of iterations to find lowest deviation
 const MAX_ITERATIONS: u64 = 100_000_000;
+
+const MAX_DEVIATION_GOAL: u8 = 3;
 
 // Location of data source file
 const DATA_FILE: &str = "persons.csv";
@@ -23,9 +25,13 @@ const DATA_FILE: &str = "persons.csv";
 // Number of groups to distribute people
 const NUMBER_OF_GROUPS: u8 = 15;
 
-fn main() -> std::io::Result<()> {
+const APP_PORT: u16 = 8080;
+
+use axum::{routing::get, Json, Router};
+
+async fn get_handler() -> Json<Report> {
     // Opening data file
-    let file = File::open(DATA_FILE)?;
+    let file = File::open(DATA_FILE).expect("Failed to open source data file");
 
     // Initializing file reader
     let mut rdr = ReaderBuilder::new().has_headers(true).from_reader(file);
@@ -52,6 +58,8 @@ fn main() -> std::io::Result<()> {
     // of the original persons vector.
     let mut smallest_deviation: u8 = get_worst_deviation(&persons_original, NUMBER_OF_GROUPS);
 
+    let mut report: Json<Report> = write_results_to_file(&best_shuffle, NUMBER_OF_GROUPS, 0).await;
+
     for i in 0..MAX_ITERATIONS {
         // Calculating progress based on current iteration and max iteration
         let progress: f64 = i as f64 / MAX_ITERATIONS as f64;
@@ -76,9 +84,26 @@ fn main() -> std::io::Result<()> {
             smallest_deviation = worst_deviation;
             best_shuffle = current_persons_shuffle;
 
-            write_results_to_file(&best_shuffle, NUMBER_OF_GROUPS, i);
+            report = write_results_to_file(&best_shuffle, NUMBER_OF_GROUPS, i).await;
+
+            if worst_deviation <= MAX_DEVIATION_GOAL {
+                break;
+            }
         }
     }
 
-    Ok(())
+    report
+}
+
+#[tokio::main]
+async fn main() {
+    let app = Router::new().route("/", get(get_handler));
+
+    let ip_address = format!("0.0.0.0:{}", APP_PORT);
+
+    let listener = tokio::net::TcpListener::bind(ip_address).await.unwrap();
+
+    println!("listening on {}", listener.local_addr().unwrap());
+
+    axum::serve(listener, app).await.unwrap();
 }
