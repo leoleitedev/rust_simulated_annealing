@@ -17,7 +17,7 @@ use structs::{Person, Report};
 // Number of iterations to find lowest deviation
 const MAX_ITERATIONS: u64 = 100_000_000;
 
-const MAX_DEVIATION_GOAL: u8 = 3;
+const MAX_DEVIATION_GOAL: u8 = 1;
 
 // Location of data source file
 const DATA_FILE: &str = "persons.csv";

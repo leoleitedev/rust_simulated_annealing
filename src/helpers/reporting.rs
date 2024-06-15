@@ -13,33 +13,33 @@ use crate::{
 
 use serde_json;
 
-fn get_persons_count(persons: &Vec<Person>) -> u32 {
+fn get_persons_count(persons: &[Person]) -> u32 {
     match u32::try_from(persons.len()) {
         Ok(count) => count,
         Err(_) => panic!("Failed to convert the length of persons to u32"),
     }
 }
 
-fn get_total_age(persons: &Vec<Person>) -> u32 {
+fn get_total_age(persons: &[Person]) -> u32 {
     let sum: u64 = persons.iter().map(|p| p.age as u64).sum();
-    let result = match u32::try_from(sum) {
+
+    match u32::try_from(sum) {
         Ok(result) => result,
         Err(_) => panic!("Failed to convert the total age to u32"),
-    };
-    result
+    }
 }
 
-pub fn get_average_age(persons: &Vec<Person>) -> u8 {
-    let persons_count: u32 = get_persons_count(&persons);
-    let total_age: u32 = get_total_age(&persons);
+pub fn get_average_age(persons: &[Person]) -> u8 {
+    let persons_count: u32 = get_persons_count(persons);
+    let total_age: u32 = get_total_age(persons);
 
     u8::try_from(total_age / persons_count).unwrap()
 }
 
-pub fn get_worst_deviation(persons: &Vec<Person>, number_of_groups: u8) -> u8 {
-    let average_age: u8 = get_average_age(&persons);
+pub fn get_worst_deviation(persons: &[Person], number_of_groups: u8) -> u8 {
+    let average_age: u8 = get_average_age(persons);
 
-    let group_indexes = get_group_indexes(&persons, number_of_groups);
+    let group_indexes = get_group_indexes(persons, number_of_groups);
 
     let mut worst_deviation: usize = 0;
 
@@ -56,12 +56,11 @@ pub fn get_worst_deviation(persons: &Vec<Person>, number_of_groups: u8) -> u8 {
         let group_participants_count = end_index - start_index + 1;
 
         for person in &persons[start_index..=end_index] {
-            group_total_age += usize::try_from(person.age).unwrap()
+            group_total_age += usize::from(person.age);
         }
 
         let group_age_average = group_total_age / group_participants_count;
-        let group_age_average_deviation =
-            group_age_average.abs_diff(usize::try_from(average_age).unwrap());
+        let group_age_average_deviation = group_age_average.abs_diff(usize::from(average_age));
 
         if group_age_average_deviation > worst_deviation {
             worst_deviation = group_age_average_deviation
@@ -71,10 +70,10 @@ pub fn get_worst_deviation(persons: &Vec<Person>, number_of_groups: u8) -> u8 {
     worst_deviation as u8
 }
 
-pub fn extract_metrics(persons: &Vec<Person>, number_of_groups: u8) {
-    let total_records: u32 = get_persons_count(&persons);
-    let total_age: u32 = get_total_age(&persons);
-    let average_age = total_age / total_records as u32;
+pub fn extract_metrics(persons: &[Person], number_of_groups: u8) {
+    let total_records: u32 = get_persons_count(persons);
+    let total_age: u32 = get_total_age(persons);
+    let average_age = total_age / total_records;
     let worst_deviation = get_worst_deviation(persons, number_of_groups);
 
     println!("Total records: {}", total_records);
@@ -84,15 +83,15 @@ pub fn extract_metrics(persons: &Vec<Person>, number_of_groups: u8) {
 }
 
 pub async fn write_results_to_file(
-    persons: &Vec<Person>,
+    persons: &[Person],
     number_of_groups: u8,
     iteration: u64,
 ) -> Json<Report> {
-    let groups: Vec<Group> = split_into_groups(&persons, number_of_groups);
+    let groups: Vec<Group> = split_into_groups(persons, number_of_groups);
 
     let report = Report {
-        age_average: get_average_age(&persons),
-        age_average_worst_deviation: get_worst_deviation(&persons, number_of_groups),
+        age_average: get_average_age(persons),
+        age_average_worst_deviation: get_worst_deviation(persons, number_of_groups),
         participants_count: persons.len(),
         groups,
     };
@@ -104,7 +103,7 @@ pub async fn write_results_to_file(
 
     let timestamp = Utc::now().format("%Y-%m-%d_%H-%M-%S").to_string();
 
-    if !fs::metadata("results").is_ok() {
+    if fs::metadata("results").is_err() {
         fs::create_dir("results").expect("Failed to create path")
     }
 

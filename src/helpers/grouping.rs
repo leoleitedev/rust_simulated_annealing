@@ -1,12 +1,12 @@
 use crate::helpers::reporting::get_average_age;
 use crate::structs::{Group, Person};
 
-pub fn split_into_groups(persons: &Vec<Person>, number_of_groups: u8) -> Vec<Group> {
+pub fn split_into_groups(persons: &[Person], number_of_groups: u8) -> Vec<Group> {
     let mut groups: Vec<Group> = Vec::new();
 
     let group_indexes = get_group_indexes(persons, number_of_groups);
 
-    let global_age_average = get_average_age(&persons);
+    let global_age_average = get_average_age(persons);
 
     for i in 0..group_indexes.len() {
         let mut group = Group {
@@ -16,13 +16,11 @@ pub fn split_into_groups(persons: &Vec<Person>, number_of_groups: u8) -> Vec<Gro
             participants: Vec::new(),
         };
 
-        let persons_slice: Vec<Person>;
-
-        if i == 0 {
-            persons_slice = persons[0..=group_indexes[i]].to_vec();
+        let persons_slice: Vec<Person> = if i == 0 {
+            persons[0..=group_indexes[i]].to_vec()
         } else {
-            persons_slice = persons[(group_indexes[i - 1] + 1)..=group_indexes[i]].to_vec();
-        }
+            persons[(group_indexes[i - 1] + 1)..=group_indexes[i]].to_vec()
+        };
 
         let group_age_average = get_average_age(&persons_slice);
         group.age_average = group_age_average;
@@ -36,7 +34,7 @@ pub fn split_into_groups(persons: &Vec<Person>, number_of_groups: u8) -> Vec<Gro
     groups
 }
 
-pub fn get_group_indexes(persons: &Vec<Person>, number_of_groups: u8) -> Vec<usize> {
+pub fn get_group_indexes(persons: &[Person], number_of_groups: u8) -> Vec<usize> {
     let mut group_indexes: Vec<usize> = Vec::new();
 
     let group_size = (persons.len() as f64 / number_of_groups as f64).round() as usize;
@@ -47,7 +45,7 @@ pub fn get_group_indexes(persons: &Vec<Person>, number_of_groups: u8) -> Vec<usi
 
     for group in 1..=number_of_groups {
         if group != 1 {
-            end = end + group_size;
+            end += group_size;
         }
 
         if group <= remainder {

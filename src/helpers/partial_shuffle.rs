@@ -3,8 +3,8 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand::Rng;
 
-pub fn partial_shuffle(persons: &mut Vec<Person>, percentage: f64) -> Vec<Person> {
-    let mut persons_clone = persons.clone();
+pub fn partial_shuffle(persons: &mut [Person], percentage: f64) -> Vec<Person> {
+    let mut persons_clone = persons.to_owned();
 
     let mut rng = thread_rng();
 
@@ -16,7 +16,7 @@ pub fn partial_shuffle(persons: &mut Vec<Person>, percentage: f64) -> Vec<Person
     let indices_to_shuffle = &indices[..records_to_shuffle];
 
     for &index in indices_to_shuffle {
-        let swap_index = rng.gen_range(0..persons.len()); // Use gen_range method with correct argument
+        let swap_index = rng.gen_range(0..persons.len());
         persons_clone.swap(index, swap_index);
     }
 
