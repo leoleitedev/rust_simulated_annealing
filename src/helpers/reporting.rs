@@ -76,13 +76,10 @@ pub fn extract_metrics(persons: &[Person], number_of_groups: u8) {
     let average_age = total_age / total_records;
     let worst_deviation = get_worst_deviation(persons, number_of_groups);
 
-    println!("Total records: {}", total_records);
-    println!("Total age: {}", total_age);
-    println!("Average age: {}", average_age);
-    println!("Worst deviation: {}", worst_deviation);
+    println!("Total records: {total_records}; Total age: {total_age}; Average age: {average_age}; Worst deviation: {worst_deviation}");
 }
 
-pub async fn write_results_to_file(
+pub fn write_results_to_file(
     persons: &[Person],
     number_of_groups: u8,
     iteration: u64,

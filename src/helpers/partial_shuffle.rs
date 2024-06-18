@@ -3,7 +3,7 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand::Rng;
 
-pub fn partial_shuffle(persons: &mut [Person], percentage: f64) -> Vec<Person> {
+pub fn partial_shuffle(persons: &[Person], percentage: f64) -> Vec<Person> {
     let mut persons_clone = persons.to_owned();
 
     let mut rng = thread_rng();

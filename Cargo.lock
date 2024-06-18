@@ -39,6 +39,7 @@ dependencies = [
  "axum",
  "chrono",
  "csv",
+ "num_cpus",
  "rand",
  "serde",
  "serde_derive",
